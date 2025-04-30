@@ -229,3 +229,18 @@ textarea.simple-input.fullWidth{
   align-items: last baseline;
 }
 
+tr{
+  color: var(--dimContrast)
+}
+
+th{
+  text-align: left;
+}
+
+td{
+}
+
+.col-avg-price{
+  color: var(--orange)
+}
+

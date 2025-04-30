@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area } from 'recharts';
 import { BaseDirectory, readTextFile, writeTextFile } from "@tauri-apps/api/fs";
 
-function PricePlot({metadata}) {
+function PricePlot({metadata, onClick, sectors, point1, point2, csvData, setCsvData}) {
 
-    const [csvData, setCsvData] = useState(null);
     const [csvFileName, setCsvFileName] = useState("file.csv");
+
+
     const csvFilePath = metadata?.tauriDataPath;
 
     useEffect(() => {
@@ -28,12 +29,34 @@ function PricePlot({metadata}) {
           }
       };
 
-      handleLoadFile();
-  }, [csvFilePath]);
+        handleLoadFile();
+    }, [csvFilePath, setCsvData]);
 
-    console.log(csvData)
+
+    const isInDateRange = (date, start, end) => {
+        const currentDate = new Date(date);
+        return currentDate >= new Date(start) && currentDate <= new Date(end);
+    };
+
+    const isInSectorRange = (date) => {
+        if (!Array.isArray(sectors) || sectors.length === 0) return false;
+        return sectors.some(({ point1, point2 }) =>
+            new Date(date) >= new Date(point1.datetime) &&
+            new Date(date) <= new Date(point2.datetime)
+        );
+    };
+
+    const getHighlightedData = (data) => {
+        return data.map(item => ({
+            ...item,
+            sectorClose: isInSectorRange(item.datetime) ? item.close : null, // Use a unique key
+        }));
+    };
+
+
     const strokeColor = 'hsl(0, 6%, 9%);'
     const ticksColor = 'hsl(0, 0%, 58%);'
+    const forestGreen = 'hsl(124, 100%, 29%);'
     return (
         csvData ?( 
             <ResponsiveContainer width="100%" height="100%" >
@@ -44,6 +67,7 @@ function PricePlot({metadata}) {
               margin={{
                   right: 35
               }}
+              onClick={onClick} 
             >
             <CartesianGrid 
               strokeLinecap 
@@ -61,14 +85,22 @@ function PricePlot({metadata}) {
             />
             <YAxis stroke={ticksColor} axisLine={false} tickLine={false}/>
             <Tooltip />
-            <Line 
-            type="monotone" 
-            dataKey="close" 
-            stroke="hsl(84, 8%, 88%)" 
-            dot={false}
-            activeDot={{ r: 4 }} 
-            strokeWidth={5}
-            />
+                <Line
+                    type="monotone"
+                    dataKey="close"
+                    stroke="hsl(84, 8%, 88%)"
+                    dot={false}
+                    activeDot={{ r: 4 }}
+                    strokeWidth={5}
+                />
+                <Line
+                    type="monotone"
+                    data={getHighlightedData(csvData)}
+                    dataKey="sectorClose"
+                    stroke={forestGreen} // Green color
+                    dot={false}
+                    strokeWidth={4}
+                />
             </LineChart>
         </ResponsiveContainer>
         ) : ''

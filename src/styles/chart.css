@@ -21,3 +21,9 @@
     font-size: 1.2rem;
     font-weight: normal;
 }
+
+.chart-tertiary-info{
+    font-size: 1.2rem;
+    font-weight: normal;
+    color: var(--dimContrast);
+}

@@ -21,7 +21,6 @@ function AnimatedPage({ children }) {
     </motion.div>
   );
 }
-console.log('hmm')
 
 function App() {
   const location = useLocation();
